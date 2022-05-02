@@ -1,0 +1,829 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Example of the Authorization Code flow with Spotify</title>
+  <link rel="stylesheet" href="main.css">
+  <style type="text/css">
+    @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+    #login,
+    #loggedin,
+    #draw-shapes,
+    #info-shapes {
+      display: none;
+    }
+
+    .text-overflow {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 500px;
+    }
+  </style>
+          <script src="https://cdn.jsdelivr.net/npm/underscore@1.13.1/underscore-umd-min.js"></script>
+          <script src="libr\two.js"></script></head>
+</head>
+
+<body>
+
+  <div class="container">
+    <div id="login">
+      <h1 class=home-title>Playlist Image Generator</h1>
+      <p class=home-desc>Make your own Playlist Cover </p>
+      <a href="/login" class="spt-button">Log in with Spotify</a>
+    </div>
+  </div>
+
+  <div id="loggedin" class=picklist>
+    <div id="play-lists">
+    </div>
+  </div>
+
+  <div id="infolist" class=picklist>
+    <div id="info-list">
+    </div>
+  </div>
+
+  <script id="play-lists-template" type="text/x-handlebars-template">
+    <h1>Escolha uma playlist</h1>
+      <div class="media">
+        <div class="media-body">
+           <ul class=play_list>
+             {{#each items}}
+             <li  id={{id}} class="list">{{name}}</li><br>
+             {{/each}}
+           </ul>
+        </div>
+      </div>
+    </script>
+
+    <div id="draw-shapes">
+    </div>
+      <div id="info-shapes">
+      </div>
+
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
+  <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+
+  <script>
+    (function () {
+      var docLists = document.getElementsByClassName('list');
+      var docTracks = document.getElementsByClassName('track');
+      /**
+       * Obtains parameters from the hash of the URL
+       * @return Object
+       */
+      function getHashParams() {
+        var hashParams = {};
+        var e, r = /([^&;=]+)=?([^&;]*)/g,
+          q = window.location.hash.substring(1);
+        while (e = r.exec(q)) {
+          hashParams[e[1]] = decodeURIComponent(e[2]);
+        }
+        return hashParams;
+      }
+
+      var playListSource = document.getElementById('play-lists-template').innerHTML,
+        playListTemplate = Handlebars.compile(playListSource),
+        playListPlaceholder = document.getElementById('play-lists');
+
+
+
+      var params = getHashParams();
+
+      var access_token = params.access_token,
+        refresh_token = params.refresh_token,
+        error = params.error;
+
+      if (error) {
+        alert('There was an error during the authentication');
+      } else {
+        if (access_token) {
+
+          $.ajax({
+            url: 'https://api.spotify.com/v1/me/playlists?limit=50', // alterar o objeto desejado aqui
+            headers: {
+              'Authorization': 'Bearer ' + access_token
+            },
+            success: function (response) {
+              playListPlaceholder.innerHTML = playListTemplate(response);
+              for (var i = 0; i < docLists.length; i++) {
+                docLists[i].addEventListener("click", tracks(docLists[i].id));
+              }
+              $('#login').hide();
+              $('#loggedin').show();
+            }
+          });
+        } else {
+          // render initial screen
+          $('#login').show();
+          $('#loggedin').hide();
+        }
+
+      }
+    })();
+
+
+    let arr = [];
+
+
+    function tracks(list_id) {
+      return function executeOnEvent(event) {
+        /**
+         * Obtains parameters from the hash of the URL
+         * @return Object
+         */
+        function getHashParams() {
+          var hashParams = {};
+          var e, r = /([^&;=]+)=?([^&;]*)/g,
+            q = window.location.hash.substring(1);
+          while (e = r.exec(q)) {
+            hashParams[e[1]] = decodeURIComponent(e[2]);
+          }
+          return hashParams;
+        }
+
+        var params = getHashParams();
+
+        var access_token = params.access_token,
+          refresh_token = params.refresh_token,
+          error = params.error;
+
+        if (error) {
+          alert('There was an error during the authentication');
+        } else {
+          if (access_token) {
+
+            $.ajax({
+              url: 'https://api.spotify.com/v1/playlists/' + list_id +
+                '/tracks?market=PT&fields=items(track(name%2Cid))', // alterar o objeto desejado aqui
+              headers: {
+                'Authorization': 'Bearer ' + access_token
+              },
+              success: function (response) {
+                for (var i = 0; i < response.items.length; i++) {
+                  arr.push(response.items[i].track.id);
+                }
+                inform()
+                $('#loggedin').hide();
+                $('infotemplate').show();
+
+              }
+            });
+          } else {
+            alert('There was an error picking your playlist');
+          }
+
+        }
+      }
+    };
+    var acousticness_arr = [];
+    var danceability_arr = [];
+    var duration_arr = [];
+    var energy_arr = [];
+    var instrumentalness_arr = [];
+    var key_arr = [];
+    var loudness_arr = [];
+    var tempo_arr = [];
+    var valence_arr = [];
+    var mode_arr = [];
+    var parametros= [];
+    var rangeEstrela, rangeLados, rangeSatura, rangeRastro, rangeKey, rangeRaio, rangeTempo, rangeValence;
+    var downImage;
+
+    function inform() {
+        /**
+         * Obtains parameters from the hash of the URL
+         * @return Object
+         */
+        function getHashParams() {
+          var hashParams = {};
+          var e, r = /([^&;=]+)=?([^&;]*)/g,
+            q = window.location.hash.substring(1);
+          while (e = r.exec(q)) {
+            hashParams[e[1]] = decodeURIComponent(e[2]);
+          }
+          return hashParams;
+        }
+
+       
+        var params = getHashParams();
+
+        var access_token = params.access_token,
+          refresh_token = params.refresh_token,
+          error = params.error;
+        
+    
+
+        if (error) {
+          alert('There was an error during the authentication');
+        } else {
+          if (access_token) {
+            for(let i = 0; i<arr.length; i++){
+            $.ajax({
+              url: 'https://api.spotify.com/v1/audio-features/' + arr[i],
+              headers: {
+                'Authorization': 'Bearer ' + access_token
+              },
+              success: function (response) {
+                tempo_arr.push(response.tempo);
+                TempoMedio();
+                acousticness_arr.push(response.acousticness);
+                AcousticnessMedio();
+                danceability_arr.push(response.danceability);
+                DanceabilityMedio();
+                duration_arr.push(response.duration_ms);
+                DurationMedio();
+                energy_arr.push(response.energy);
+                EnergyMedio();
+                instrumentalness_arr.push(response.instrumentalness);
+                InstrumentalnessMedio();
+                key_arr.push(response.key);
+                KeyMedio();
+                loudness_arr.push(response.loudness);
+                LoudnessMedio();
+                valence_arr.push(response.valence);
+                ValenceMedio();
+                mode_arr.push(response.mode);
+                ModeMedio();
+                parametros = {  "danceability": avgDanceability,  "energy": avgEnergy,  "key": avgKey,  "loudness": avgLoudness,  "mode": avgMode,  "acousticness": avgAcousticness,  "instrumentalness": avgInstrumentalness,"valence": avgValence,  "tempo": avgTempo,  "duration_ms": avgDuration};
+                if(i==arr.length-1){
+                desenha();
+                $('#draw-shapes').show();
+                document.getElementById('info-shapes').innerHTML='<p>Utilizamos vários parâmetros fornecidos pelo Spotfy a partir das playlists selecionadas, adaptando-os para de forma a gerar diferentes representações visuais. Utilizando a média ou moda dos valores obtidos das músicas para gerar as imagens. Utilizando dados mais objetivos como por exemplo o <span>modo maior ou menor</span>, resultando na utilização de uma cor quente ou fria(respectivamente), ou subjetivos como <span>dançabilidade</span> que resultam em pequenos focos de luz (buscando remeter as discotecas). Sendo utilizados também: <span>Duração da música</span> para definir o polígono a ser desenhado, <span>energia</span>(que mede o quão intensa e barulhenta é a música) gerando um linhas mais visíveis e alongadas, <span>Tom</span> definindo a Matiz da cor, <span>Instrumentalidade</span> definindo a Saturação, <span>Altura</span> da música definindo o tamanho dos polígonos, <span>Batidas Por Minuto(BPM)</span> definindo a frequência de repetição das formas.</p>' 
+                + '<div class="rangeSlider"> <input type="range" min="0" max="1" value="0" step="0.05" class="sliders" id="SliderEstrela"> Altere as Estrelas </div>'
+                + '<div class="rangeSlider"> <input type="range" min="0.05" max="1" value="0" step="0.05" class="sliders" id="SliderValence"> Altere o tamanho das Estrelas </div>'
+                + '<div class="rangeSlider"> <input type="range" min="0" max="600000" value="0" step="100" class="sliders" id="SliderLados"> Altere os lados do polígono </div>'
+                + '<div class="rangeSlider"> <input type="range" min="0" max="1" value="0" step="0.05" class="sliders" id="SliderRastro"> Altere o rastro das formas </div>'
+                + '<div class="rangeSlider"> <input type="range" min="0" max="0.01" value="0" step="0.0005" class="sliders" id="SliderSatura"> Altere a saturação da imagem </div>'
+                + '<div class="rangeSlider"> <input type="range" min="0" max="12" value="0" step="1" class="sliders" id="SliderKey"> Altere as cores da imagem </div>'
+                + '<div class="rangeSlider"> <input type="range" min="0" max="60" value="0" step="1" class="sliders" id="SliderRaio"> Altere o tamanho das formas</div>'
+                + '<div class="rangeSlider"> <input type="range" min="50" max="150" value="0" step="1" class="sliders" id="SliderTempo"> Altere as repetições </div>'+
+                '<br><br><a id="download" class="button" href="" download> Download Here </a>';
+                
+                downImage = document.getElementById('download');
+                downImage.href = dataURL;
+
+
+                //funções slider estrela//
+                rangeEstrela = document.getElementById('SliderEstrela')
+                rangeEstrela.value = parametros.danceability;
+                rangeEstrela.oninput = alternarEstrelas;
+                //fim das estrelas//
+
+                //funções slider raio estrela//
+                rangeValence = document.getElementById('SliderValence')
+                rangeValence.value = parametros.valence;
+                rangeValence.oninput = alternarRaioEstrela;
+                //fim das estrelas//
+                
+                //funções slider lados//
+                rangeLados = document.getElementById('SliderLados')
+                rangeLados.value = parametros.duration_ms;
+                rangeLados.oninput = alternarLados;
+                //fim dos lados//
+
+
+                //funções slider rastro//
+                rangeRastro = document.getElementById('SliderRastro')
+                rangeRastro.value = parametros.energy;
+                rangeRastro.oninput = alternarRastro;
+                //fim do rastro//
+
+                //funções slider saturação//
+                rangeSatura = document.getElementById('SliderSatura')
+                rangeSatura.value = parametros.instrumentalness;
+                rangeSatura.oninput = alternarSatura;
+                //fim da saturação//
+                
+                //funções slider cores//
+                rangeKey = document.getElementById('SliderKey')
+                rangeKey.value = parametros.key;
+                rangeKey.oninput = alternarKey;
+                //fim das cores//
+
+                //funções raio formas//
+                rangeRaio = document.getElementById('SliderRaio')
+                rangeRaio.value = -1* parametros.loudness;
+                rangeRaio.oninput = alternarRaio;
+                //fim dos raios//
+
+                //funções repetições//
+                rangeTempo = document.getElementById('SliderTempo')
+                rangeTempo.value = parametros.tempo;
+                rangeTempo.oninput = alternarTempo;
+                //fim das repetições//
+
+                $('#info-shapes').show();
+                }
+              }
+            });
+          } 
+          } else {
+            alert('There was an error picking your playlist');
+          }
+
+          // 
+        }}
+        // joga isso aqui dentro do success ^^^
+        var avgTempo = 0;
+        var avgAcousticness = 0;
+        var avgDanceability = 0;
+        var avgDuration = 0;
+        var avgEnergy = 0;
+        var avgInstrumentalness = 0;
+        var avgKey = 0;
+        var avgLoudness = 0;
+        var avgValence = 0;
+        var avgMode = 0;
+
+        function TempoMedio(){
+          var sum = 0;
+        for( var i = 0; i < tempo_arr.length; i++ ){
+        sum += parseFloat( tempo_arr[i], 10 ); //don't forget to add the base
+      }
+        avgTempo = sum/tempo_arr.length;
+        return avgTempo;
+}
+
+      function AcousticnessMedio(){
+        var sum = 0;
+        for( var i = 0; i < acousticness_arr.length; i++){
+        sum += parseFloat( acousticness_arr[i], 10 ); 
+      }
+        avgAcousticness = sum/acousticness_arr.length;
+        return avgAcousticness;
+      }
+
+
+function DanceabilityMedio(){
+          var sum = 0;
+        for( var i = 0; i < danceability_arr.length; i++){
+        sum += parseFloat( danceability_arr[i], 10 ); 
+      }
+        avgDanceability = sum/danceability_arr.length;
+        return avgDanceability;
+}
+
+function DurationMedio(){
+          var sum = 0;
+        for( var i = 0; i < duration_arr.length; i++){
+        sum += parseFloat( duration_arr[i], 10 ); 
+      }
+        avgDuration = sum/duration_arr.length;
+        return avgDuration;
+}
+
+function EnergyMedio(){
+          var sum = 0;
+        for( var i = 0; i < energy_arr.length; i++){
+        sum += parseFloat( energy_arr[i], 10 ); 
+      }
+        avgEnergy = sum/energy_arr.length;
+        return avgEnergy;
+}
+
+function InstrumentalnessMedio(){
+          var sum = 0;
+        for( var i = 0; i < instrumentalness_arr.length; i++){
+        sum += parseFloat( instrumentalness_arr[i], 10 ); 
+      }
+        avgInstrumentalness = sum/instrumentalness_arr.length;
+        return avgInstrumentalness;
+}
+
+function KeyMedio(){
+          var sum = 0;
+        for( var i = 0; i < key_arr.length; i++){
+        sum += parseFloat( key_arr[i], 10 ); 
+      }
+        avgKey = sum/key_arr.length;
+        return avgKey;
+}
+
+function LoudnessMedio(){
+          var sum = 0;
+        for( var i = 0; i < loudness_arr.length; i++){
+        sum += parseFloat( loudness_arr[i], 10 ); 
+      }
+        avgLoudness = sum/loudness_arr.length;
+        return avgLoudness;
+}
+
+function ValenceMedio(){
+          var sum = 0;
+        for( var i = 0; i < valence_arr.length; i++){
+        sum += parseFloat( valence_arr[i], 10 ); 
+      }
+        avgValence = sum/valence_arr.length;
+        return avgValence;
+}
+
+function ModeMedio(){
+          var sum = 0;
+        for( var i = 0; i < mode_arr.length; i++){
+        sum += parseFloat( mode_arr[i], 10 ); 
+      }
+        avgMode = sum/mode_arr.length;
+        return avgMode;
+}
+var two
+var canvas;
+var dataURL;
+var downImage;
+    function desenha(){
+
+
+    var elem = document.getElementById('draw-shapes');
+    var params = { width: 500, height: 500, type: Two.Types.canvas};
+    two = new Two(params).appendTo(elem);
+    var acress = map_range(parametros.tempo,50,200,200,50);//acressimo definido por bpm
+    var estrelas =Math.round(parametros.danceability * 10);//estrelas por quadrante
+    var rastro = parametros.energy;//definido pelo quão energético é a música /////////////////// dps
+    var lados = Math.floor(map_range(parametros.duration_ms/60000,0,12,3,9));
+    var satura = map_range(parametros.instrumentalness, 0, 0.01, 100,0);;//porcentagem saturação em HSL
+    var raioestrela = parametros.valence;
+    
+    console.log("satura:"+satura);
+    if(satura>100)satura=100;
+    var hue = map_range(parametros.key,0,12,0,180);//conferir numero maximo Key
+    var mode=parametros.mode;//pensar melhor depois com con
+    if (mode==1) if(hue<80) hue+=280;
+    else hue-=80;
+    else hue+=100;
+    //cores 100-280 frias, 280-360 0-100 quentes
+    var con;//define se é concavo ou convexo, há ver depois do resto
+    var raio= (parametros.loudness/(-6))*10 ;
+    console.log("H"+hue+"S"+satura+"L"+50);
+    var fundo = two.makeRectangle(250,250,500,500);
+    var grad = two.makeLinearGradient(-250,-250, 250, 250, new Two.Stop(0, "hsl("+ hue+","+ satura +"%,"+ 20 +"%)", 1), new Two.Stop(1, "hsl("+ hue+","+ satura +"%,"+ 80 +"%)", 1),);
+    
+    var stxt;
+    var styt;
+    fundo.fill= grad;
+    for(var p=0;p<4;p++){
+      switch(p){
+        case 0:
+        stxt=0;
+        styt=0;
+        break;
+        case 1:
+        stxt=250;
+        styt=250;
+        break;
+        case 2:
+        stxt=250;
+        styt=0;
+        break;
+        case 3:
+        stxt=0;
+        styt=250;
+        break;
+      }
+      for(var s=0; s<estrelas;s++){
+        stx=stxt+20+s*20*Math.cos(Math.PI*2/parametros.danceability*s);
+        sty=styt+20+s*20*Math.sin(Math.PI*2/parametros.danceability*s);
+        if(stx<0)stx+=params.width; else if(stx>params.width)stx-params.width;
+        if(sty<0)sty+=params.height; else if(sty>params.height)sty-params.height;
+        var strl = two.makeStar(stx,sty,raioestrela*10,raioestrela*5,5);
+        strl.fill = "rgba(255,255,255,0.2)";
+        var crcl = two.makeCircle(stx,sty,raioestrela*10);
+        var gradRadA = two.makeRadialGradient(0,  0,  raioestrela*10,  new Two.Stop(0, "rgba(255,255,255,1)",.6),  new Two.Stop(1, "rgba(255,255,255,0)", 1),);
+        crcl.fill = gradRadA;
+        crcl.noStroke();
+        strl.noStroke();
+      }
+    }
+
+            //var x=two.width/2;*//*
+            for(var y=-200;y<two.height+100;){ 
+                
+            for(var x=-100;x<two.width+100;){
+                if (lados<9) var polygon = two.makePolygon(x, y, raio, lados);
+                else var polygon = two.makeCircle(x,y,raio);
+                polygon.noStroke();
+                polygon.fill = "hsl("+ hue+","+ satura +"%,"+ 50 +"%)";
+                x+=acress;
+                y+=acress/10;
+                var angacress=0;
+                for(var lado=0;lado<lados;lado++){
+                xs= x + raio*Math.cos(Math.PI*2/lados+angacress);
+                ys= y + raio*Math.sin(Math.PI*2/lados+angacress);
+                angacress+=Math.PI*2/lados;
+                //rastro é basicamente um valor entre 0 e 1 , pensando em usar isso pra definir a intensidade das cusvas e 10*rastro pra o numero de curvas 
+                var ncurvas = Math.round(10*rastro);
+                console.log('ncurvas '+ncurvas);
+                var curb = true;
+                var t=ncurvas+2;
+                switch(ncurvas){
+                //var curve = two.makeCurve(xs-80*rastro, ys-40*rastro, xs-50*rastro, ys-70*rastro, xs, ys, true);//avaliar como customizar
+                        case 0:
+                            curb=false;
+                        break;
+                        case 1:
+                            var curve = two.makeCurve(
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-2*map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t*ncurvas)*Math.sin((Math.PI*5/4)-2*map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs,
+                                ys,
+                                true
+                                );
+                        break;
+                        case 2:
+                            var curve = two.makeCurve(
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs,
+                                ys,
+                                true
+                                );
+                        break;
+                        case 3:
+                            var curve = two.makeCurve(
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs,
+                                ys,
+                                true
+                                );
+                        break;
+                        case 4:
+                            var curve = two.makeCurve(
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs,
+                                ys,
+                                true
+                                );
+                        break;
+                        case 5:
+                            var curve = two.makeCurve(
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs,
+                                ys,
+                                true
+                                );
+                        break;
+                        case 6:
+                            var curve = two.makeCurve(
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs,
+                                ys,
+                                true
+                                );
+                        break;
+                        case 7:
+                            var curve = two.makeCurve(
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs,
+                                ys,
+                                true
+                                );
+                        break;
+                        case 8:
+                            var curve = two.makeCurve(
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs,
+                                ys,
+                                true
+                                );
+                        break;
+                        case 9:
+                            var curve = two.makeCurve(
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs,
+                                ys,
+                                true
+                                );
+                        break;
+                        case 10:
+                            var curve = two.makeCurve(
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)-map_range(rastro,0,Math.PI/4,0,1)),
+                                xs + (t*ncurvas)*Math.cos((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                ys + (t--*ncurvas)*Math.sin((Math.PI*5/4)+map_range(rastro,0,Math.PI/4,0,1)),
+                                xs,
+                                ys,
+                                true
+                                );
+                        break;
+
+                }
+                if(curb){
+                curve.fill = "rgba(0,0,0,0)";
+                curve.linewidth=params.loudness/-6;
+                curve.stroke="hsl("+ hue+","+ satura +"%,"+ 50 +"%)";
+            }
+                }
+                
+            }
+            y+= acress;
+            console.log("y="+y);
+            console.log(two.height);
+        }
+
+
+
+
+            
+
+            // Don't forget to tell two to render everything
+            // to the screen
+            var hue2 = (hue-360)*-1;
+            var opac = 0.2;
+            var filtro = two.makeRectangle(250,250,500,500);
+            var grad = two.makeLinearGradient(-250,-250, 250, 250, new Two.Stop(0, "hsla("+ hue2+","+ satura +"%,"+ 20 +"%,"+opac+")", 1), new Two.Stop(1, "hsl("+ hue2+","+ satura +"%,"+ 80 +"%,"+opac+")", 1),);
+            
+            filtro.fill= grad;
+
+            two.update();
+            var canvas = two.renderer.domElement;
+            dataURL = canvas.toDataURL();
+    function map_range(value, low1, high1, low2, high2) {
+      
+return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
+}}
+
+   function alternarEstrelas(){
+    parametros.danceability= rangeEstrela.value;
+    document.getElementById('draw-shapes').innerHTML = "";
+    desenha();
+    downImage = document.getElementById('download');
+    downImage.href = dataURL;
+}
+
+function alternarLados(){
+    parametros.duration_ms=rangeLados.value;
+    document.getElementById('draw-shapes').innerHTML = "";
+    desenha();
+    downImage = document.getElementById('download');
+    downImage.href = dataURL;
+}
+
+function alternarRastro(){
+    parametros.energy= rangeRastro.value;
+    document.getElementById('draw-shapes').innerHTML = "";
+    desenha();
+    downImage = document.getElementById('download');
+    downImage.href = dataURL;
+}
+
+function alternarSatura(){
+    parametros.instrumentalness= rangeSatura.value;
+    document.getElementById('draw-shapes').innerHTML = "";
+    desenha();
+    downImage = document.getElementById('download');
+    downImage.href = dataURL;
+}
+  function alternarKey(){
+
+    parametros.key=rangeKey.value;
+    document.getElementById('draw-shapes').innerHTML = "";
+    desenha();
+    downImage = document.getElementById('download');
+    downImage.href = dataURL;
+  }
+
+    function alternarRaio(){
+    parametros.loudness = -1 * rangeRaio.value;
+    document.getElementById('draw-shapes').innerHTML = "";
+    desenha();
+    downImage = document.getElementById('download');
+    downImage.href = dataURL;
+}
+
+
+function alternarTempo(){
+    parametros.tempo = rangeTempo.value;
+    document.getElementById('draw-shapes').innerHTML = "";
+    desenha();
+    downImage = document.getElementById('download');
+    downImage.href = dataURL;
+}
+
+function alternarRaioEstrela(){
+    parametros.valence = rangeValence.value;
+    document.getElementById('draw-shapes').innerHTML = "";
+    desenha();
+    downImage = document.getElementById('download');
+    downImage.href = dataURL;
+}
+    </script>
+</body>
+
+</html>
